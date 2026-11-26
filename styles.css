@@ -60,7 +60,7 @@ input[type=color]{width:30px;height:26px;padding:2px;border:1px solid var(--line
 #reference-photo{position:absolute;inset:0 12px;width:calc(100% - 24px);height:100%;object-fit:contain;pointer-events:none;transition:transform .25s ease;transform-origin:center center}
 #reference-photo[data-detail="shirt"]{transform:scale(1.8);transform-origin:center 25%}
 #reference-photo[data-detail="pants"]{transform:scale(1.8);transform-origin:center 76%}
-.reference-controls{display:flex;gap:5px;flex-wrap:wrap;padding:10px 14px 0}
+.reference-controls{position:relative;z-index:2;display:flex;gap:5px;flex-wrap:wrap;padding:10px 14px 0}
 .reference-controls button{border:1px solid #d5dacd;border-radius:5px;background:transparent;color:#56625a;padding:6px 9px;font-size:10px}
 .reference-controls button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
 .reference-controls button:disabled{opacity:.5;cursor:not-allowed}
