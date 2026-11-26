@@ -46,9 +46,17 @@
       </aside>
       <section class="preview-panel" aria-labelledby="preview-heading">
         <div class="preview-toolbar"><div><span class="status-dot"></span><h2 id="preview-heading">The complete look</h2></div><button id="reset" type="button" class="text-button">↺ Reset</button></div>
-        <div class="canvas-wrap"><canvas id="outfit" width="1200" height="1584" role="img" aria-label="Illustrated outfit preview with a striped shirt and dark trousers"></canvas><span class="preview-badge">FABRIC PREVIEW</span></div>
+        <div class="avatar-controls"><span>Avatar skin tone</span><div id="avatar-tones" class="avatar-tones" role="group" aria-label="Choose avatar skin tone"></div></div>
+        <div class="reference-controls" id="reference-controls" aria-label="Preview image" hidden>
+          <button type="button" data-preview="fabric" aria-pressed="true">Fabric preview</button>
+          <button type="button" data-preview="full" aria-pressed="false" disabled>Full photo</button>
+          <button type="button" data-preview="shirt" aria-pressed="false" disabled>Shirt close-up</button>
+          <button type="button" data-preview="pants" aria-pressed="false" disabled>Trouser close-up</button>
+        </div>
+        <div class="canvas-wrap"><canvas id="outfit" width="1200" height="1584" role="img" aria-label="Illustrated outfit preview with a striped shirt and dark trousers"></canvas><img id="reference-photo" alt="User-provided outfit photo reference" hidden><span class="preview-badge">FABRIC PREVIEW</span></div>
+        <div class="reference-upload-row"><button id="reference-upload" type="button" class="secondary-button">＋ Add try-on photo</button><input id="reference-file" type="file" accept="image/*" hidden><span>Stored on this device only</span></div>
         <div class="preview-bottom"><div><strong>Looks like a good match.</strong><p>Keep this pairing for your next shopping trip.</p></div><button id="download" type="button" class="primary-button">↓ <span>Save look</span></button></div>
-        <p class="preview-disclaimer">Illustrated fabric placement, not a fit simulation. Colors and pattern scale may differ in real life.</p>
+        <p id="preview-disclaimer" class="preview-disclaimer">Illustrated fabric placement, not a fit simulation. Colors and pattern scale may differ in real life.</p>
       </section>
       <aside class="inspiration" aria-labelledby="inspiration-heading">
         <p class="eyebrow">THE SWATCH BOOK</p><h2 id="inspiration-heading">A starting<br>point.</h2><p class="muted">No photo handy?<br>Try a fabric from the shelf.</p>

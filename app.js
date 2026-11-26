@@ -14,9 +14,20 @@
     { name: "Rose cotton", color: "#c99e92", accent: "#e5c4ba", style: "linen" },
     { name: "Cloud white", color: "#efeee6", accent: "#d9d8d0", style: "linen" },
   ];
+  const avatarTones = [
+    { name: "Porcelain", color: "#f3d9c4" },
+    { name: "Light", color: "#e8bd98" },
+    { name: "Medium", color: "#cb9168" },
+    { name: "Tan", color: "#a86e4a" },
+    { name: "Deep", color: "#784832" },
+    { name: "Rich", color: "#4d3025" },
+  ];
+  let selectedAvatarTone = avatarTones[2];
   let crop = null;
   let drag = null;
   let imageRequest = 0;
+  let referenceRequest = 0;
+  let referenceUrl = null;
 
   function makeCanvas(size) {
     const canvas = document.createElement("canvas");
@@ -129,6 +140,33 @@
     ctx.stroke(new Path2D(data));
   }
 
+  function drawAvatar(ctx) {
+    ctx.fillStyle = selectedAvatarTone.color;
+    ctx.fill(new Path2D("M284 54 Q300 62 316 54 L318 112 L282 112 Z"));
+    ctx.fill(new Path2D("M144 273 Q157 279 179 280 L177 321 Q174 332 164 326 L151 316 Q145 307 144 273 Z M456 273 Q443 279 421 280 L423 321 Q426 332 436 326 L449 316 Q455 307 456 273 Z"));
+
+    ctx.save();
+    ctx.translate(300, 70);
+    ctx.scale(1.1, 1.1);
+    ctx.translate(-300, -70);
+    ctx.beginPath();
+    ctx.ellipse(260, 32, 6, 9, 0, 0, Math.PI * 2);
+    ctx.ellipse(340, 32, 6, 9, 0, 0, Math.PI * 2);
+    ctx.ellipse(300, 32, 38, 38, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "#342922";
+    ctx.fill(new Path2D("M262 35 Q254 5 282 -3 Q312 -10 334 11 Q346 27 337 44 L329 30 Q320 17 309 14 Q293 26 269 28 L265 43 Z"));
+    ctx.fillStyle = "#332820";
+    for (const x of [287, 313]) {
+      ctx.beginPath();
+      ctx.arc(x, 33, 1.7, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    seam(ctx, "M298 40 L297 48 L302 49 M294 57 Q300 61 306 57", "#70483d99", 1);
+    ctx.restore();
+  }
+
   function drawOutfit(canvas) {
     const ctx = canvas.getContext("2d");
     ctx.save();
@@ -143,6 +181,8 @@
     for (let y = 12; y < 792; y += 30) {
       ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(600, y); ctx.stroke();
     }
+    ctx.save();
+    ctx.translate(0, 20);
     const shadow = ctx.createRadialGradient(300, 740, 0, 300, 740, 130);
     shadow.addColorStop(0, "#54634a20");
     shadow.addColorStop(1, "#54634a00");
@@ -152,6 +192,7 @@
     ctx.fillStyle = shadow;
     ctx.fillRect(150, 600, 300, 280);
     ctx.restore();
+    drawAvatar(ctx);
     material(ctx, pantsPath, "pants", [185, 350, 230, 390]);
     seam(ctx, "M202 374 Q300 388 398 374 M211 380 Q213 413 196 438 M389 380 Q387 413 404 438 M299 382 L299 459 Q318 456 320 436 L320 385");
     seam(ctx, "M245 444 Q250 540 241 708 M357 444 Q350 540 360 708", "#ffffff28", 2);
@@ -179,6 +220,7 @@
       seam(ctx, `M${x} 361 L${x - 1} 377`, "#e6e5d28c", 4);
       seam(ctx, `M${x + 2} 361 L${x + 1} 377`, "#23322566", 1);
     }
+    ctx.restore();
     ctx.fillStyle = "#7a8474";
     ctx.font = "9px system-ui, sans-serif";
     ctx.textAlign = "center";
@@ -188,12 +230,71 @@
 
   function render() {
     drawOutfit(outfit);
-    outfit.setAttribute("aria-label", `Outfit preview: ${garments.shirt.name} shirt with ${garments.pants.name} trousers.`);
+    outfit.setAttribute("aria-label", `Outfit preview: ${garments.shirt.name} shirt with ${garments.pants.name} trousers on a ${selectedAvatarTone.name.toLowerCase()} skin-tone avatar.`);
+  }
+
+  function setPreview(mode) {
+    const photoMode = mode !== "fabric";
+    if (photoMode && !referenceUrl) return;
+    outfit.style.visibility = photoMode ? "hidden" : "visible";
+    outfit.setAttribute("aria-hidden", String(photoMode));
+    const photo = $("reference-photo");
+    photo.hidden = !photoMode;
+    photo.dataset.detail = mode;
+    $("reference-controls").querySelectorAll("[data-preview]").forEach((button) => {
+      button.setAttribute("aria-pressed", String(button.dataset.preview === mode));
+    });
+    document.querySelector(".preview-badge").textContent = photoMode ? "PHOTO REFERENCE" : "FABRIC PREVIEW";
+    $("preview-disclaimer").textContent = photoMode
+      ? "Photo reference only. Selected fabrics update the illustrated preview; this image is not recolored or altered."
+      : "Illustrated fabric placement, not a fit simulation. Colors and pattern scale may differ in real life.";
+  }
+
+  async function loadReference(file) {
+    if (!file) return;
+    const request = ++referenceRequest;
+    if (!file.type.startsWith("image/")) {
+      showError("Please choose an image file, such as a JPEG, PNG, or WebP.");
+      return;
+    }
+    if (file.size > 20 * 1024 * 1024) {
+      showError("This photo is larger than 20 MB. Please resize it or choose a smaller photo.");
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    try {
+      const image = new Image();
+      image.src = url;
+      await image.decode();
+      if (request !== referenceRequest) return;
+      if (image.naturalWidth < 16 || image.naturalHeight < 16) {
+        showError("This image is too small. Please choose a photo at least 16 × 16 pixels.");
+        return;
+      }
+      if (referenceUrl) URL.revokeObjectURL(referenceUrl);
+      referenceUrl = url;
+      $("reference-photo").src = referenceUrl;
+      $("reference-controls").hidden = false;
+      $("reference-controls").querySelectorAll("[data-preview]").forEach((button) => { button.disabled = false; });
+      setPreview("full");
+      announce("Photo reference loaded. Choose a close-up to inspect the shirt or trousers.");
+    } catch (error) {
+      if (request === referenceRequest) {
+        console.error("Could not open photo reference:", error);
+        showError("This image could not be opened. Try a JPEG, PNG, or WebP photo.");
+      }
+    } finally {
+      if (url !== referenceUrl) URL.revokeObjectURL(url);
+    }
   }
 
   function reset() {
     setSample("shirt", samples[0]);
     setSample("pants", samples[1]);
+    selectedAvatarTone = avatarTones[2];
+    $("avatar-tones").querySelectorAll("button").forEach((button, index) => {
+      button.setAttribute("aria-pressed", String(avatarTones[index] === selectedAvatarTone));
+    });
     render();
   }
 
@@ -371,6 +472,17 @@
     });
   }
 
+  $("reference-upload").addEventListener("click", () => $("reference-file").click());
+  $("reference-file").addEventListener("change", (event) => {
+    const file = event.target.files[0];
+    event.target.value = "";
+    loadReference(file);
+  });
+  $("reference-controls").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-preview]");
+    if (button && !button.disabled) setPreview(button.dataset.preview);
+  });
+
   for (const sample of samples) {
     const button = document.createElement("button");
     button.type = "button";
@@ -387,6 +499,25 @@
       announce(`${sample.name} applied to ${part === "shirt" ? "the shirt" : "the trousers"}.`);
     });
     $("samples").append(button);
+  }
+
+  for (const tone of avatarTones) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "avatar-tone";
+    button.style.setProperty("--tone", tone.color);
+    button.setAttribute("aria-label", `${tone.name} skin tone`);
+    button.setAttribute("aria-pressed", String(tone === selectedAvatarTone));
+    button.title = `${tone.name} skin tone`;
+    button.addEventListener("click", () => {
+      selectedAvatarTone = tone;
+      $("avatar-tones").querySelectorAll("button").forEach((item) => {
+        item.setAttribute("aria-pressed", String(item === button));
+      });
+      render();
+      announce(`${tone.name} skin tone applied to the avatar.`);
+    });
+    $("avatar-tones").append(button);
   }
 
   $("reset").addEventListener("click", () => {
