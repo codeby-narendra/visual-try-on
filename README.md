@@ -20,14 +20,16 @@ All asset links are relative, so both project sites and user sites work. No GitH
 - Drag or click to position the crop. Focus the crop canvas and use arrow keys for keyboard control; hold Shift for larger steps. Use Selection size to adjust the area.
 - Apply the patch, then adjust pattern size and angle. The fabric repeats over the illustration.
 - Alternatively choose a solid color, or pick a sample after selecting its destination garment in the swatch book.
+- Choose an avatar skin tone above the preview to see how the outfit palette looks against different illustrated skin tones. The selected tone appears on the avatar's face, neck, and hands, and is included in saved looks.
+- Choose **Add try-on photo** to view a personal outfit photo alongside the fabric preview. Use **Shirt close-up** or **Trouser close-up** to inspect details; this is a reference view and does not apply the selected fabric to the photo.
 - **Save look** downloads an 1800 x 2376 PNG of the current combination. Keep it in Downloads or save/share it to your photo library using your device's controls.
 - **Reset** restores the sample pairing. Reloading the page also resets it: uploaded photos and pairings are not persisted. Download any look you want to keep.
 
 ## Privacy and limitations
 
-Photos are decoded and drawn locally in the browser. The app makes no network requests for photo processing, contains no analytics, and uses no third-party fonts, scripts, or services. GitHub still serves the website and may log ordinary site requests.
+Photos are decoded and drawn locally in the browser. The app makes no network requests for photo processing or photo references, contains no analytics, and uses no third-party fonts, scripts, or services. GitHub still serves the website and may log ordinary site requests.
 
-This is an illustrative fabric-combination tool, not photorealistic virtual try-on, automatic garment segmentation, background removal, or a size/fit predictor. Uploaded patches repeat as tiles, so seams may be visible when the patch is not naturally seamless. Lighting, screen settings, and manual pattern scaling affect the preview.
+This is an illustrative fabric-combination tool, not photorealistic virtual try-on, automatic garment segmentation, background removal, or a size/fit predictor. The avatar is a simple illustration for visual color comparison, not a personalized likeness or skin-tone match recommendation. Uploaded patches repeat as tiles, so seams may be visible when the patch is not naturally seamless. Lighting, screen settings, and manual pattern scaling affect the preview.
 
 JPEG, PNG, and WebP are recommended. Other image formats depend on browser support, including HEIC. Files over 20 MB and images smaller than 16 x 16 are rejected. Large decoded photos can consume significant memory on older phones; resized photos work best.
 
