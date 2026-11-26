@@ -28,6 +28,7 @@
   let imageRequest = 0;
   let referenceRequest = 0;
   let referenceUrl = null;
+  let pendingPreviewMode = "full";
 
   function makeCanvas(size) {
     const canvas = document.createElement("canvas");
@@ -235,7 +236,12 @@
 
   function setPreview(mode) {
     const photoMode = mode !== "fabric";
-    if (photoMode && !referenceUrl) return;
+    if (photoMode && !referenceUrl) {
+      pendingPreviewMode = mode;
+      announce("Choose a try-on photo to open this view.");
+      $("reference-file").click();
+      return;
+    }
     outfit.style.visibility = photoMode ? "hidden" : "visible";
     outfit.setAttribute("aria-hidden", String(photoMode));
     const photo = $("reference-photo");
@@ -275,9 +281,10 @@
       referenceUrl = url;
       $("reference-photo").src = referenceUrl;
       $("reference-controls").hidden = false;
-      $("reference-controls").querySelectorAll("[data-preview]").forEach((button) => { button.disabled = false; });
-      setPreview("full");
-      announce("Photo reference loaded. Choose a close-up to inspect the shirt or trousers.");
+      const mode = pendingPreviewMode;
+      pendingPreviewMode = "full";
+      setPreview(mode);
+      announce(mode === "full" ? "Photo loaded. Choose a close-up to inspect the shirt or trousers." : `Photo loaded in ${mode === "shirt" ? "shirt" : "trouser"} close-up.`);
     } catch (error) {
       if (request === referenceRequest) {
         console.error("Could not open photo reference:", error);
@@ -472,7 +479,10 @@
     });
   }
 
-  $("reference-upload").addEventListener("click", () => $("reference-file").click());
+  $("reference-upload").addEventListener("click", () => {
+    pendingPreviewMode = "full";
+    $("reference-file").click();
+  });
   $("reference-file").addEventListener("change", (event) => {
     const file = event.target.files[0];
     event.target.value = "";
